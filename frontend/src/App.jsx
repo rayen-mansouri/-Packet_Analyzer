@@ -6,6 +6,9 @@ import Timeline from "./components/Timeline";
 import PacketInspector from "./components/PacketInspector";
 import "./App.css";
 
+// API URL from environment variable or default to localhost
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export default function App() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -82,7 +85,7 @@ export default function App() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await axios.post("http://localhost:8000/api/analyze", formData, {
+      const response = await axios.post(`${API_URL}/api/analyze`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setResults(response.data);
@@ -102,7 +105,7 @@ export default function App() {
     try {
       console.log("Exporting PDF...");
       const response = await axios.post(
-        "http://localhost:8000/api/export-pdf",
+        `${API_URL}/api/export-pdf`,
         results,
         { 
           responseType: 'blob',
@@ -157,7 +160,7 @@ export default function App() {
     
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/chat",
+        `${API_URL}/api/chat`,
         {
           message: userMessage,
           analysis_data: results
