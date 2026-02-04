@@ -7,7 +7,7 @@ This guide will help you deploy PacketAnalyzer to Vercel (frontend) and Render (
 - GitHub account
 - Vercel account (free tier available)
 - Render account (free tier available)
-- OpenAI API key
+- Groq API key (free at https://console.groq.com)
 
 ## Step 1: Deploy Backend to Render
 
@@ -22,7 +22,8 @@ This guide will help you deploy PacketAnalyzer to Vercel (frontend) and Render (
    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 5. **Add Environment Variables**:
    - Click "Environment" tab
-   - Add: `OPENAI_API_KEY` = `your_actual_openai_api_key`
+   - Add: `GROQ_API_KEY` = `your_actual_groq_api_key`
+   - Add: `GROQ_MODEL` = `llama-3.3-70b-versatile`
 6. Click **"Create Web Service"**
 7. **Copy your backend URL** (e.g., `https://packetanalyzer-api.onrender.com`)
 
@@ -75,7 +76,8 @@ npm run dev
 ## Environment Variables Summary
 
 ### Backend (.env)
-- `OPENAI_API_KEY` - Your OpenAI API key for the chatbot
+- `GROQ_API_KEY` - Your Groq API key (get from https://console.groq.com)
+- `GROQ_MODEL` - Model to use (default: `llama-3.3-70b-versatile`)
 
 ### Frontend (.env)
 - `VITE_API_URL` - Backend API URL (local: `http://localhost:8000`, production: your Render URL)
@@ -83,7 +85,7 @@ npm run dev
 ## Troubleshooting
 
 ### Chatbot not working
-- Verify `OPENAI_API_KEY` is set in Render environment variables
+- Verify `GROQ_API_KEY` is set in Render environment variables
 - Check backend logs in Render dashboard
 
 ### CORS errors
