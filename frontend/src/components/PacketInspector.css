@@ -1,0 +1,373 @@
+.packet-inspector {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95), rgba(15, 20, 25, 0.95));
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 12px;
+  padding: 0;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.inspector-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.inspector-header h3 {
+  margin: 0 0 15px 0;
+  color: #00d4ff;
+  font-size: 1.2em;
+}
+
+.inspector-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.search-input,
+.protocol-filter {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 0.9em;
+}
+
+.search-input {
+  flex: 1;
+}
+
+.protocol-filter-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 600px;
+}
+
+.protocol-btn {
+  padding: 6px 12px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #b0b0b0;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.protocol-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.protocol-btn.protocol-TCP {
+  color: #4CAF50;
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.protocol-btn.protocol-TCP:hover {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #4CAF50;
+}
+
+.protocol-btn.protocol-TCP.active {
+  background: rgba(76, 175, 80, 0.25);
+  border-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+.protocol-btn.protocol-UDP {
+  color: #2196F3;
+  border-color: rgba(33, 150, 243, 0.5);
+}
+
+.protocol-btn.protocol-UDP:hover {
+  background: rgba(33, 150, 243, 0.15);
+  border-color: #2196F3;
+}
+
+.protocol-btn.protocol-UDP.active {
+  background: rgba(33, 150, 243, 0.25);
+  border-color: #2196F3;
+  box-shadow: 0 0 8px rgba(33, 150, 243, 0.3);
+}
+
+.protocol-btn.protocol-HTTP {
+  color: #FF9800;
+  border-color: rgba(255, 152, 0, 0.5);
+}
+
+.protocol-btn.protocol-HTTP:hover {
+  background: rgba(255, 152, 0, 0.15);
+  border-color: #FF9800;
+}
+
+.protocol-btn.protocol-HTTP.active {
+  background: rgba(255, 152, 0, 0.25);
+  border-color: #FF9800;
+  box-shadow: 0 0 8px rgba(255, 152, 0, 0.3);
+}
+
+.protocol-btn.protocol-HTTPS {
+  color: #9C27B0;
+  border-color: rgba(156, 39, 176, 0.5);
+}
+
+.protocol-btn.protocol-HTTPS:hover {
+  background: rgba(156, 39, 176, 0.15);
+  border-color: #9C27B0;
+}
+
+.protocol-btn.protocol-HTTPS.active {
+  background: rgba(156, 39, 176, 0.25);
+  border-color: #9C27B0;
+  box-shadow: 0 0 8px rgba(156, 39, 176, 0.3);
+}
+
+.protocol-btn.protocol-DNS {
+  color: #00BCD4;
+  border-color: rgba(0, 188, 212, 0.5);
+}
+
+.protocol-btn.protocol-DNS:hover {
+  background: rgba(0, 188, 212, 0.15);
+  border-color: #00BCD4;
+}
+
+.protocol-btn.protocol-DNS.active {
+  background: rgba(0, 188, 212, 0.25);
+  border-color: #00BCD4;
+  box-shadow: 0 0 8px rgba(0, 188, 212, 0.3);
+}
+
+.protocol-btn.protocol-ICMP {
+  color: #F44336;
+  border-color: rgba(244, 67, 54, 0.5);
+}
+
+.protocol-btn.protocol-ICMP:hover {
+  background: rgba(244, 67, 54, 0.15);
+  border-color: #F44336;
+}
+
+.protocol-btn.protocol-ICMP.active {
+  background: rgba(244, 67, 54, 0.25);
+  border-color: #F44336;
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.3);
+}
+
+.protocol-btn.protocol-all {
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+.protocol-btn.protocol-all:hover {
+  background: rgba(96, 165, 250, 0.15);
+  border-color: #60a5fa;
+}
+
+.protocol-btn.protocol-all.active {
+  background: rgba(96, 165, 250, 0.25);
+  border-color: #60a5fa;
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+}
+
+.inspector-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  flex: 1;
+  overflow: hidden;
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.packet-list,
+.packet-details {
+  background: rgba(15, 20, 25, 0.95);
+  overflow-y: auto;
+}
+
+.packet-table-header {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 100px;
+  gap: 10px;
+  padding: 12px 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+  font-weight: 600;
+  color: #00d4ff;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.packet-table-body {
+  font-size: 0.9em;
+}
+
+.packet-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 100px;
+  gap: 10px;
+  padding: 10px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.packet-row:hover {
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.packet-row.selected {
+  background: rgba(0, 212, 255, 0.15);
+  border-left: 3px solid #00d4ff;
+}
+
+.col-num {
+  color: #888;
+  font-family: 'Courier New', monospace;
+}
+
+.col-src,
+.col-dst {
+  font-family: 'Courier New', monospace;
+  color: #e0e0e0;
+}
+
+.col-proto {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85em;
+}
+
+.protocol-TCP { color: #4CAF50; }
+.protocol-UDP { color: #2196F3; }
+.protocol-HTTP { color: #FF9800; }
+.protocol-HTTPS { color: #9C27B0; }
+.protocol-DNS { color: #00BCD4; }
+.protocol-ICMP { color: #F44336; }
+.protocol-ARP { color: #FFC107; }
+
+.no-packets {
+  padding: 40px 20px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+.packet-details {
+  padding: 20px;
+}
+
+.details-header h4 {
+  color: #00d4ff;
+  margin: 0 0 20px 0;
+  font-size: 1.1em;
+}
+
+.detail-section {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+}
+
+.detail-section h4 {
+  color: #00ff88;
+  font-size: 0.95em;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.9em;
+}
+
+.detail-row .label {
+  color: #888;
+  font-weight: 500;
+  min-width: 140px;
+}
+
+.detail-row .value {
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  text-align: right;
+  flex: 1;
+  word-break: break-all;
+}
+
+.protocol-badge {
+  background: rgba(0, 212, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #00d4ff;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.ip-address {
+  color: #00d4ff;
+  font-weight: 600;
+}
+
+.http-method {
+  background: rgba(255, 152, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #FF9800;
+  font-weight: 600;
+}
+
+.flags-value {
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.uri-value,
+.small-text {
+  font-size: 0.85em;
+  color: #b0b0b0;
+}
+
+.no-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+}
+
+.no-selection-icon {
+  font-size: 4em;
+  margin-bottom: 15px;
+  opacity: 0.3;
+}
+
+.no-selection p {
+  font-size: 1.1em;
+  font-style: italic;
+}
