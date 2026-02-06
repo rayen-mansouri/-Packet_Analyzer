@@ -148,16 +148,6 @@ async def analyze_pcap(file: UploadFile = File(...), request: Optional[AnalysisR
         if request.include_ai_summary:
             try:
                 print("Generating AI summary...")
-                analyzer = PacketAnalyzer()
-                summary = analyzer.generate_summary(packets if packets else [], statistics if statistics else {})
-                result["ai_summary"] = summary
-            except Exception as e:
-                print(f"Error generating summary: {e}")
-                result["ai_summary"] = "AI summary not available"
-
-        if request.include_ai_summary:
-            try:
-                print("Generating AI summary...")
                 ai_analyzer = AIAnalyzer()
                 # Pass the complete analysis data to AI
                 ai_input = {

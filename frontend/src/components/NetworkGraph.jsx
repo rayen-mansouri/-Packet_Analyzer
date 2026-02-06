@@ -8,6 +8,7 @@ export default function NetworkGraph({ data, threatIPs = [] }) {
   const [selectedNode, setSelectedNode] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
   const [stats, setStats] = useState({ nodes: 0, links: 0, maxPackets: 0 });
+  const [filterIp, setFilterIp] = useState("");
   const zoomInitializedRef = useRef(false);
   const simulationRef = useRef(null);
 
@@ -62,14 +63,40 @@ export default function NetworkGraph({ data, threatIPs = [] }) {
     });
     svg.call(zoom);
 
-    // Prepare data - use more nodes if available, max 50
-    const allNodes = data.nodes.sort((a, b) => b.total_packets - a.total_packets);
-    const displayNodes = allNodes.slice(0, Math.min(50, Math.max(10, allNodes.length)));
-    const nodeIds = new Set(displayNodes.map((n) => n.id));
-    const displayLinks = data.links.filter((l) => nodeIds.has(l.source) && nodeIds.has(l.target));
+    const linkPacketValue = (link) => link.packets ?? link.value ?? link.weight ?? 0;
+    const getNodeId = (nodeOrId) => (typeof nodeOrId === "string" ? nodeOrId : nodeOrId?.id);
+
+    const normalizedFilter = filterIp.trim();
+
+    // Prepare data - prioritize links so connections are visible
+    const linksSorted = [...data.links].sort((a, b) => linkPacketValue(b) - linkPacketValue(a));
+    const filteredLinks = normalizedFilter
+      ? linksSorted.filter((l) => {
+          const sourceId = getNodeId(l.source);
+          const targetId = getNodeId(l.target);
+          return sourceId === normalizedFilter || targetId === normalizedFilter;
+        })
+      : linksSorted;
+
+    const maxLinks = Math.min(150, Math.max(30, filteredLinks.length));
+    const displayLinks = normalizedFilter ? filteredLinks : filteredLinks.slice(0, maxLinks);
+
+    let nodeIds = new Set(displayLinks.flatMap((l) => [getNodeId(l.source), getNodeId(l.target)].filter(Boolean)));
+    let displayNodes = data.nodes.filter((n) => nodeIds.has(n.id));
+
+    if (normalizedFilter && displayLinks.length === 0) {
+      displayNodes = data.nodes.filter((n) => n.id === normalizedFilter);
+      nodeIds = new Set(displayNodes.map((n) => n.id));
+    }
+
+    if (!normalizedFilter && (displayLinks.length === 0 || displayNodes.length === 0)) {
+      const allNodes = [...data.nodes].sort((a, b) => (b.total_packets || 0) - (a.total_packets || 0));
+      displayNodes = allNodes.slice(0, Math.min(50, Math.max(10, allNodes.length)));
+      nodeIds = new Set(displayNodes.map((n) => n.id));
+    }
 
     // Calculate max packets for scaling
-    const maxPackets = Math.max(...displayNodes.map((n) => n.total_packets), 1);
+    const maxPackets = Math.max(...displayNodes.map((n) => n.total_packets || 0), 1);
 
     setStats({
       nodes: displayNodes.length,
@@ -84,10 +111,11 @@ export default function NetworkGraph({ data, threatIPs = [] }) {
       .range([12, 60]);
 
     // Link width scale
+    const maxLinkPackets = Math.max(...displayLinks.map((l) => linkPacketValue(l)), 1);
     const linkWidthScale = d3
       .scaleSqrt()
-      .domain([0, Math.max(...displayLinks.map((l) => l.packets), 1)])
-      .range([1, 8]);
+      .domain([0, maxLinkPackets])
+      .range([1, 12]);
 
     // Force simulation
     const simulation = d3
@@ -101,7 +129,7 @@ export default function NetworkGraph({ data, threatIPs = [] }) {
             // Closer nodes when there are fewer IPs
             const nodeCount = displayNodes.length;
             const baseDist = nodeCount < 10 ? 80 : nodeCount < 20 ? 120 : 150;
-            return Math.max(baseDist, baseDist - d.packets / 5);
+            return Math.max(baseDist, baseDist - linkPacketValue(d) / 5);
           })
           .strength(0.08)
       )
@@ -130,14 +158,18 @@ export default function NetworkGraph({ data, threatIPs = [] }) {
       .enter()
       .append("line")
       .attr("stroke", (d) => {
-        const isThreat = threatIPs.includes(d.source) || threatIPs.includes(d.target);
+        const sourceId = getNodeId(d.source);
+        const targetId = getNodeId(d.target);
+        const isThreat = threatIPs.includes(sourceId) || threatIPs.includes(targetId);
         return isThreat ? "rgba(255, 68, 68, 0.6)" : "rgba(0, 212, 255, 0.4)";
       })
-      .attr("stroke-width", (d) => linkWidthScale(d.packets))
+      .attr("stroke-width", (d) => linkWidthScale(linkPacketValue(d)))
       .attr("opacity", 0.7)
       .attr("class", "network-link")
       .attr("marker-end", (d) => {
-        const isThreat = threatIPs.includes(d.source) || threatIPs.includes(d.target);
+        const sourceId = getNodeId(d.source);
+        const targetId = getNodeId(d.target);
+        const isThreat = threatIPs.includes(sourceId) || threatIPs.includes(targetId);
         return isThreat ? "url(#arrowhead-threat)" : "url(#arrowhead)";
       });
 
@@ -322,7 +354,7 @@ export default function NetworkGraph({ data, threatIPs = [] }) {
       tooltip.remove();
       simulation.stop();
     };
-  }, [data, threatIPs]); // FIXED: Only depend on data and threatIPs, NOT hoveredNode or selectedNode!
+  }, [data, threatIPs, filterIp]); // FIXED: Only depend on data, threatIPs, and filter
 
   // FIXED: Separate effect just for styling updates when hovering/selecting
   useEffect(() => {
@@ -357,6 +389,17 @@ export default function NetworkGraph({ data, threatIPs = [] }) {
           <span className="stat-item">🔵 {stats.nodes} IPs</span>
           <span className="stat-item">🔗 {stats.links} Connections</span>
           <span className="stat-item">📊 Max: {stats.maxPackets} packets</span>
+        </div>
+        <div className="network-filter">
+          <input
+            type="text"
+            placeholder="Filter by IP (e.g. 192.168.1.10)"
+            value={filterIp}
+            onChange={(e) => setFilterIp(e.target.value)}
+          />
+          {filterIp && (
+            <button className="filter-clear" onClick={() => setFilterIp("")}>Clear</button>
+          )}
         </div>
         <div className="network-legend">
           <span className="legend-item"><span className="legend-dot" style={{ background: "#00d4ff" }}></span> Normal</span>

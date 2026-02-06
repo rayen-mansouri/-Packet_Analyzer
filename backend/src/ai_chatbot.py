@@ -4,7 +4,7 @@ import requests
 import json
 import re
 
-from chat_assistant import ChatAssistant
+from .chat_assistant import ChatAssistant
 
 
 class AIChatbot:

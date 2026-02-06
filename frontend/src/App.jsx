@@ -15,20 +15,18 @@ export default function App() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [theme, setTheme] = useState("dark");
-  const [sidebarTab, setSidebarTab] = useState("documentation");
+  const [sidebarTab, setSidebarTab] = useState("contact");
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const chatMessagesEndRef = useRef(null);
-  
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, chatLoading]);
-
   useEffect(() => {
     document.body.classList.toggle("theme-light", theme === "light");
   }, [theme]);
@@ -127,6 +125,14 @@ export default function App() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
+                  <a
+                    className="contact-item"
+                    href="https://github.com/rayen-mansouri"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    🌐 github.com/rayen-mansouri
+                  </a>
       const filename = `packet_analysis_${results.file_name.replace('.pcap', '').replace('.pcapng', '')}.pdf`;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
@@ -169,6 +175,9 @@ export default function App() {
         {
           message: userMessage,
           analysis_data: results
+        },
+        {
+          timeout: 15000
         }
       );
       
@@ -178,7 +187,10 @@ export default function App() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
     } catch (err) {
-      const errorMsg = err.response?.data?.detail || err.message || 'Unknown error';
+      const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+      const errorMsg = isTimeout
+        ? 'Chat request timed out. Please try again.'
+        : (err.response?.data?.detail || err.message || 'Unknown error');
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
         content: `❌ Sorry, I encountered an error: ${errorMsg}\n\nPlease make sure:\n• Your OpenAI API key is set in backend/.env\n• The backend server is running\n• You have uploaded a packet capture file`,
@@ -200,7 +212,16 @@ export default function App() {
     <div className="app">
       <div className="header">
         <div className="header-left">
-          <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <button
+            className="sidebar-toggle"
+            onClick={() => {
+              const nextOpen = !sidebarOpen;
+              setSidebarOpen(nextOpen);
+              if (nextOpen) {
+                setSidebarTab("contact");
+              }
+            }}
+          >
             {sidebarOpen ? '✖' : '☰'}
           </button>
           <h1>🔍 PacketAnalyzer</h1>
