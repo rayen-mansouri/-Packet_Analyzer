@@ -3,6 +3,7 @@ from typing import List, Dict, Any
 import json
 from collections import defaultdict, Counter
 from datetime import datetime
+import os
 
 
 class PacketParser:
@@ -18,8 +19,9 @@ class PacketParser:
     def parse_file(self) -> bool:
         """Load and parse pcap file"""
         try:
-            self.packets = rdpcap(self.file_path)
-            print(f"? Loaded {len(self.packets)} packets")
+            max_packets = int(os.getenv("MAX_PACKETS", "20000"))
+            self.packets = rdpcap(self.file_path, count=max_packets)
+            print(f"? Loaded {len(self.packets)} packets (max {max_packets})")
             return True
         except Exception as e:
             print(f"? Error loading file: {e}")
