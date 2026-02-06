@@ -6,8 +6,8 @@ import Timeline from "./components/Timeline";
 import PacketInspector from "./components/PacketInspector";
 import "./App.css";
 
-// API URL from environment variable or default to localhost
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// API URL from environment variable or default to current host on port 8000
+const API_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000`;
 
 export default function App() {
   const [file, setFile] = useState(null);
@@ -90,7 +90,12 @@ export default function App() {
       });
       setResults(response.data);
     } catch (err) {
-      setError(`Error: ${err.response?.data?.detail || err.message}`);
+      const isNetworkError = !err.response && (err.code === 'ERR_NETWORK' || err.message === 'Network Error');
+      if (isNetworkError) {
+        setError(`Network error: Unable to reach the backend at ${API_URL}. Please ensure the backend server is running and CORS allows this origin.`);
+      } else {
+        setError(`Error: ${err.response?.data?.detail || err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -294,7 +299,7 @@ export default function App() {
               <p className="upload-hint">Select .pcap or .pcapng for analysis</p>
 
               <div
-                className={`upload-area ${isDragOver ? 'drag-over' : ''}`}
+                className={`upload-area ${isDragOver ? 'drag-over' : ''} ${loading ? 'loading' : ''}`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -319,6 +324,21 @@ export default function App() {
                 <div className="file-selected">
                   <span>✓ {file.name}</span>
                   <span className="file-size">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                </div>
+              )}
+
+              {loading && (
+                <div className="loading-panel">
+                  <div className="loading-line"></div>
+                  <div className="loading-text">
+                    Analyzing packets
+                    <span className="loading-dots">
+                      <span>.</span>
+                      <span>.</span>
+                      <span>.</span>
+                    </span>
+                  </div>
+                  <div className="loading-subtext">Building graphs, timelines, and threat insights</div>
                 </div>
               )}
 

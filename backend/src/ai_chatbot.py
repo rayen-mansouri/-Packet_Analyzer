@@ -4,6 +4,8 @@ import requests
 import json
 import re
 
+from chat_assistant import ChatAssistant
+
 
 class AIChatbot:
     """AI-powered chatbot using Groq (100% FREE - works when hosted!)"""
@@ -38,6 +40,9 @@ class AIChatbot:
         """Process a chat message and return AI response"""
         
         if not self.client:
+            if self.analysis_context:
+                assistant = ChatAssistant()
+                return assistant.process_query(user_message, self.analysis_context)
             return self._fallback_response()
         
         try:
